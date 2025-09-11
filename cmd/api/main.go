@@ -4,13 +4,16 @@ import (
 	"log"
 	"net/http"
 
-	// "github.com/itsaFan/fleetify-be/internal/config"
-	// apihttp "github.com/itsaFan/fleetify-be/internal/http"
-	// "github.com/itsaFan/fleetify-be/internal/model"
+	"github.com/itsaFan/fleetify-be/internal/config"
 )
 
 func main() {
-
+	config.LoadEnv()
+	db, err := config.DBConnection()
+	if err != nil {
+		log.Fatalf("failed to connect DB: %v", err)
+	}
+	_ = db
 	srv := &http.Server{
 		Addr: ":8080",
 		// Handler: router,
