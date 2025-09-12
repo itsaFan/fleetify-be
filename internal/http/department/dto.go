@@ -3,6 +3,7 @@ package department
 import deptsvc "github.com/itsaFan/fleetify-be/internal/service/department"
 
 type departmentResp struct {
+	ID             uint64 `json:"id"`
 	DepartmentName string `json:"department_name"`
 	MaxClockIn     string `json:"max_clock_in"`
 	MaxClockOut    string `json:"max_clock_out"`

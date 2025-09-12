@@ -71,6 +71,7 @@ func (h *Handler) List(c *gin.Context) {
 	for i := range out.Data {
 		d := out.Data[i]
 		data[i] = departmentResp{
+			ID:             d.ID,
 			DepartmentName: d.DepartmentName,
 			MaxClockIn:     d.MaxClockInTime,
 			MaxClockOut:    d.MaxClockOutTime,
@@ -101,6 +102,7 @@ func (h *Handler) GetByName(c *gin.Context) {
 	}
 
 	data := departmentResp{
+		ID:             dept.ID,
 		DepartmentName: dept.DepartmentName,
 		MaxClockIn:     dept.MaxClockInTime,
 		MaxClockOut:    dept.MaxClockOutTime,
