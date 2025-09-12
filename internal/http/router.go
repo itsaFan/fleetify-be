@@ -7,6 +7,10 @@ import (
 	dpthttp "github.com/itsaFan/fleetify-be/internal/http/department"
 	deptrepo "github.com/itsaFan/fleetify-be/internal/repo/department"
 	deptsvc "github.com/itsaFan/fleetify-be/internal/service/department"
+
+	emphttp "github.com/itsaFan/fleetify-be/internal/http/employee"
+	emprepo "github.com/itsaFan/fleetify-be/internal/repo/employee"
+	empsvc "github.com/itsaFan/fleetify-be/internal/service/employee"
 )
 
 func NewRouter(db *gorm.DB) *gin.Engine {
@@ -19,6 +23,11 @@ func NewRouter(db *gorm.DB) *gin.Engine {
 	dptSvc := deptsvc.New(dptRepo)
 	dptHdl := dpthttp.New(dptSvc)
 	dptHdl.Register(v1)
+
+	empRepo := emprepo.New(db)
+	empSvc := empsvc.New(empRepo, dptRepo)
+	empHdl := emphttp.New(empSvc)
+	empHdl.Register(v1)
 
 	return r
 }

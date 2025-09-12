@@ -3,7 +3,7 @@ package department
 import "github.com/gin-gonic/gin"
 
 func (h *Handler) Register(rg *gin.RouterGroup) {
-	departments := rg.Group(("/departments"))
+	departments := rg.Group("/departments")
 
 	{
 		departments.POST("", h.Create)

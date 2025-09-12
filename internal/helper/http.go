@@ -38,7 +38,8 @@ func WriteError(c *gin.Context, err error) {
 		Conflict(c, err.Error())
 	case errors.Is(err, appErr.ErrRequiredField),
 		errors.Is(err, appErr.ErrInvalidInput),
-		errors.Is(err, appErr.ErrInvalidRange):
+		errors.Is(err, appErr.ErrInvalidRange),
+		errors.Is(err, appErr.ErrInvalidTimeRange):
 		BadRequest(c, err.Error())
 	case errors.Is(err, appErr.ErrNotFound):
 		NotFound(c, err.Error())

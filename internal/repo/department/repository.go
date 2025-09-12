@@ -11,6 +11,7 @@ import (
 type Repository interface {
 	Create(ctx context.Context, d *model.Department) error
 	ExistsByName(ctx context.Context, name string) (bool, error)
+	ExistsByID(ctx context.Context, id uint64) (bool, error)
 	List(ctx context.Context, p ListParams) ([]model.Department, int64, error)
 	GetByName(ctx context.Context, name string) (*model.Department, error)
 	UpdateByName(ctx context.Context, name string, p UpdateParams) error
@@ -37,6 +38,17 @@ func (r *repository) ExistsByName(ctx context.Context, name string) (bool, error
 
 	return count > 0, nil
 
+}
+
+func (r *repository) ExistsByID(ctx context.Context, id uint64) (bool, error) {
+	var count int64
+	if err := r.db.WithContext(ctx).
+		Model(&model.Department{}).
+		Where("id = ?", id).
+		Count(&count).Error; err != nil {
+		return false, err
+	}
+	return count > 0, nil
 }
 
 type ListParams struct {

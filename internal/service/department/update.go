@@ -78,7 +78,7 @@ func (s *service) UpdateByName(ctx context.Context, currentName string, in Updat
 		return nil, fmt.Errorf("%w: %v", appErr.ErrInvalidInput, err)
 	}
 	if !inT.Before(outT) {
-		return nil, fmt.Errorf("%w: max_clock_in_time must be earlier than max_clock_out_time", appErr.ErrInvalidRange)
+		return nil, fmt.Errorf("%w: max_clock_in_time must be earlier than max_clock_out_time", appErr.ErrInvalidTimeRange)
 	}
 
 	up := deptrepo.UpdateParams{}

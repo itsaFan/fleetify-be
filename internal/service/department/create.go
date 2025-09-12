@@ -41,7 +41,7 @@ func (s *service) Create(ctx context.Context, in CreateInput) (*model.Department
 		return nil, fmt.Errorf("%w: %v", appErr.ErrInvalidInput, err)
 	}
 	if !clockIn.Before(clockOut) {
-		return nil, fmt.Errorf("%w: max_clock_in_time must be earlier than max_clock_out_time", appErr.ErrInvalidRange)
+		return nil, fmt.Errorf("%w: max_clock_in_time must be earlier than max_clock_out_time", appErr.ErrInvalidTimeRange)
 	}
 
 	exists, err := s.repo.ExistsByName(ctx, name)
