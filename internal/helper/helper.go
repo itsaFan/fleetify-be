@@ -3,10 +3,7 @@ package helper
 import (
 	"errors"
 	"fmt"
-	"net/http"
 	"time"
-
-	"github.com/gin-gonic/gin"
 )
 
 func NormalizeStringField(name string) string {
@@ -23,24 +20,4 @@ func ParseTimeOfDay(s string) (time.Time, error) {
 	}
 
 	return time.Date(1, time.January, 1, t.Hour(), t.Minute(), t.Second(), 0, time.UTC), nil
-}
-
-func RespondErr(c *gin.Context, code int, err string, msg string) {
-	c.JSON(code, gin.H{
-		"error":   err,
-		"message": msg,
-	})
-	c.Abort()
-}
-
-func BadRequest(c *gin.Context, msg string) {
-	RespondErr(c, http.StatusBadRequest, "bad_request", msg)
-}
-
-func Conflict(c *gin.Context, msg string) {
-	RespondErr(c, http.StatusConflict, "conflict", msg)
-}
-
-func Internal(c *gin.Context, msg string) {
-	RespondErr(c, http.StatusInternalServerError, "internal_error", msg)
 }
