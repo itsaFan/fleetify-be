@@ -8,9 +8,9 @@ import (
 )
 
 type Employee struct {
-	ID           uint      `gorm:"primaryKey;autoIncrement;column:id"`
+	ID           uint64      `gorm:"primaryKey;autoIncrement;column:id"`
 	EmployeeID   string    `gorm:"size:50;uniqueIndex;not null; column:employee_id"`
-	DepartmentID uint      `gorm:"not null;column:department_id"`
+	DepartmentID uint64      `gorm:"not null;column:department_id"`
 	Name         string    `gorm:"size:255;not null;column:name"`
 	Address      string    `gorm:"type:text;column:address"`
 	CreatedAt    time.Time `gorm:"column:created_at"`
