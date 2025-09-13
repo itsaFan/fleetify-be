@@ -17,5 +17,3 @@ type Attendance struct {
 	Employee Employee            `gorm:"foreignKey:EmployeeID;references:EmployeeID"`
 	History  []AttendanceHistory `gorm:"foreignKey:AttendanceID;references:AttendanceID"`
 }
-
-

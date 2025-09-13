@@ -11,6 +11,10 @@ import (
 	emphttp "github.com/itsaFan/fleetify-be/internal/http/employee"
 	emprepo "github.com/itsaFan/fleetify-be/internal/repo/employee"
 	empsvc "github.com/itsaFan/fleetify-be/internal/service/employee"
+
+	atdhttp "github.com/itsaFan/fleetify-be/internal/http/attendance"
+	atdrepo "github.com/itsaFan/fleetify-be/internal/repo/attendance"
+	atdsvc "github.com/itsaFan/fleetify-be/internal/service/attendance"
 )
 
 func NewRouter(db *gorm.DB) *gin.Engine {
@@ -28,6 +32,11 @@ func NewRouter(db *gorm.DB) *gin.Engine {
 	empSvc := empsvc.New(empRepo, dptRepo)
 	empHdl := emphttp.New(empSvc)
 	empHdl.Register(v1)
+
+	atdRepo := atdrepo.New(db)
+	atdSvc := atdsvc.New(atdRepo, empRepo)
+	atdHdl := atdhttp.New(atdSvc)
+	atdHdl.Register(v1)
 
 	return r
 }
