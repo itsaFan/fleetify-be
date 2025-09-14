@@ -17,8 +17,8 @@ type Repository interface {
 	WithTx(ctx context.Context, fn func(txRepo Repository) error) error
 
 	FindEmpOpenAttendanceForUpdate(ctx context.Context, employeeID string) (*model.Attendance, error)
-	ListHistoryByEmpId(ctx context.Context, p ListParamsEmp) ([]model.AttendanceHistory, int64, error)
-	ListHistoryByDepartment(ctx context.Context, p ListParamsDept) ([]model.AttendanceHistory, int64, error)
+	ListHistoryByEmpId(ctx context.Context, p ListParamsEmp) ([]model.AttendanceHistory, error)
+	ListHistoryByDepartment(ctx context.Context, p ListParamsDept) ([]model.AttendanceHistory, error)
 
 	CreateEmpAttendanceByEmpId(ctx context.Context, d *model.Attendance) error
 	CreateAttendanceHistory(ctx context.Context, d *model.AttendanceHistory) error
@@ -82,27 +82,16 @@ func (r *repository) UpdateAttendanceOutByAttendanceID(ctx context.Context, atte
 
 type ListParamsEmp struct {
 	EmployeeID string
-	Limit      int
-	Page       int
 	FromUtc    time.Time
 	ToUtc      time.Time
 }
 
-func (r *repository) ListHistoryByEmpId(ctx context.Context, p ListParamsEmp) ([]model.AttendanceHistory, int64, error) {
+func (r *repository) ListHistoryByEmpId(ctx context.Context, p ListParamsEmp) ([]model.AttendanceHistory, error) {
 
 	empId := strings.TrimSpace(p.EmployeeID)
 	if empId == "" {
-		return nil, 0, fmt.Errorf("%w: employee_id is required", appErr.ErrRequiredField)
+		return nil, fmt.Errorf("%w: employee_id is required", appErr.ErrRequiredField)
 	}
-
-	if p.Limit <= 0 || p.Limit > 100 {
-		p.Limit = 10
-	}
-	if p.Page <= 0 {
-		p.Page = 1
-	}
-
-	offset := (p.Page - 1) * p.Limit
 
 	q := r.db.WithContext(ctx).Model(&model.AttendanceHistory{}).
 		Where("employee_id = ?", empId)
@@ -115,31 +104,48 @@ func (r *repository) ListHistoryByEmpId(ctx context.Context, p ListParamsEmp) ([
 		q = q.Where("date_attendance <= ?", p.ToUtc)
 	}
 
-	var total int64
-	if err := q.Session(&gorm.Session{}).Count(&total).Error; err != nil {
-		return nil, 0, err
+	var items []model.AttendanceHistory
+	if err := q.
+		Order("date_attendance ASC, id ASC").
+		Find(&items).Error; err != nil {
+		return nil, err
+	}
+
+	return items, nil
+}
+
+type ListParamsDept struct {
+	DepartmentID *uint64
+	FromUtc      time.Time
+	ToUtc        time.Time
+}
+
+func (r *repository) ListHistoryByDepartment(ctx context.Context, p ListParamsDept) ([]model.AttendanceHistory, error) {
+
+	q := r.db.WithContext(ctx).
+		Model(&model.AttendanceHistory{}).
+		Joins("JOIN employees e ON e.employee_id = attendance_histories.employee_id")
+
+	if p.DepartmentID != nil {
+		q = q.Where("e.department_id = ?", *p.DepartmentID)
+	}
+
+	if !p.FromUtc.IsZero() {
+		q = q.Where("attendance_histories.date_attendance >= ?", p.FromUtc)
+	}
+
+	if !p.ToUtc.IsZero() {
+		q = q.Where("attendance_histories.date_attendance <= ?", p.ToUtc)
 	}
 
 	var items []model.AttendanceHistory
 	if err := q.
-		Order("date_attendance ASC, id ASC").
-		Limit(p.Limit).
-		Offset(offset).
+		Select("attendance_histories.*").
+		Order("attendance_histories.date_attendance ASC, attendance_histories.id ASC").
 		Find(&items).Error; err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 
-	return items, total, nil
-}
+	return items, nil
 
-type ListParamsDept struct {
-	Limit   int
-	Page    int
-	FromUtc time.Time
-	ToUtc   time.Time
-}
-
-
-func (r *repository) ListHistoryByDepartment(ctx context.Context, p ListParamsDept) ([]model.AttendanceHistory, int64, error) {
-	
 }
