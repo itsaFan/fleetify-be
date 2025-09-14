@@ -36,6 +36,7 @@ func (h *Handler) Create(c *gin.Context) {
 		return
 	}
 	data := departmentResp{
+		ID:             dept.ID,
 		DepartmentName: dept.DepartmentName,
 		MaxClockIn:     dept.MaxClockInTime,
 		MaxClockOut:    dept.MaxClockOutTime,
