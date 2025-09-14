@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	_ "time/tzdata"
 
 	"github.com/itsaFan/fleetify-be/internal/config"
 	apihttp "github.com/itsaFan/fleetify-be/internal/http"
