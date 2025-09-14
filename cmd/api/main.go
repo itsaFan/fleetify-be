@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/itsaFan/fleetify-be/internal/config"
 	apihttp "github.com/itsaFan/fleetify-be/internal/http"
@@ -16,12 +17,15 @@ func main() {
 	}
 
 	router := apihttp.NewRouter(db)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
 	srv := &http.Server{
-		Addr:    ":8080",
+		Addr:    ":" + port,
 		Handler: router,
 	}
-
-	log.Println("listening on port 8080")
+	log.Println("listening on port", port)
 	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Fatal(err)
 	}
