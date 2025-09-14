@@ -26,8 +26,8 @@ func DBConnection() (*gorm.DB, error) {
 			log.New(os.Stdout, "", log.LstdFlags),
 			logger.Config{
 				SlowThreshold: 200 * time.Millisecond,
-				LogLevel:      logger.Info,
-				// LogLevel: logger.Warn,
+				// LogLevel:      logger.Info,
+				LogLevel: logger.Warn,
 			},
 		),
 	})
