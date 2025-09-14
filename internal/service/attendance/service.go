@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
 	"sort"
 	"time"
 
@@ -359,17 +360,17 @@ func (s *service) ListDeparmentAtdHistories(ctx context.Context, p ListInputDept
 				item.ClockInLocal = &str
 				item.ClockInUTC = agg.firstInUTC
 
-				diff := int(local.Sub(deadlineInLocal).Minutes())
-				if diff == 0 {
+				diffMin := signedCeilMinutes(local.Sub(deadlineInLocal))
+				if diffMin == 0 {
 					item.StatusIn = "on_time"
 					z := 0
 					item.DeltaInMinutes = &z
-				} else if diff > 0 {
+				} else if diffMin > 0 {
 					item.StatusIn = "late"
-					item.DeltaInMinutes = &diff
+					item.DeltaInMinutes = &diffMin
 				} else {
 					item.StatusIn = "early"
-					item.DeltaInMinutes = &diff
+					item.DeltaInMinutes = &diffMin
 				}
 				item.AttendanceID = agg.attendance
 			}
@@ -381,14 +382,19 @@ func (s *service) ListDeparmentAtdHistories(ctx context.Context, p ListInputDept
 				item.ClockOutLocal = &str
 				item.ClockOutUTC = agg.lastOutUTC
 
-				diff := int(local.Sub(deadlineOutLocal).Minutes())
-				if diff <= 0 {
+				diffMin := signedCeilMinutes(local.Sub(deadlineOutLocal))
+
+				switch {
+				case diffMin == 0:
 					item.StatusOut = "normal"
 					z := 0
 					item.DeltaOutMinutes = &z
-				} else {
+				case diffMin > 0:
 					item.StatusOut = "overtime"
-					item.DeltaOutMinutes = &diff
+					item.DeltaOutMinutes = &diffMin
+				default:
+					item.StatusOut = "early_leave"
+					item.DeltaOutMinutes = &diffMin
 				}
 			}
 			all = append(all, item)
@@ -499,17 +505,18 @@ func groupAndCompute(
 			str := local.Format("15:04:05")
 			item.ClockInLocal = &str
 			item.ClockInUTC = agg.firstInUTC
-			diff := int(local.Sub(deadlineInLocal).Minutes())
-			if diff == 0 {
+
+			diffMin := signedCeilMinutes(local.Sub(deadlineInLocal))
+			if diffMin == 0 {
 				item.StatusIn = "on_time"
 				z := 0
 				item.DeltaInMinutes = &z
-			} else if diff > 0 {
+			} else if diffMin > 0 {
 				item.StatusIn = "late"
-				item.DeltaInMinutes = &diff
+				item.DeltaInMinutes = &diffMin
 			} else {
 				item.StatusIn = "early"
-				item.DeltaInMinutes = &diff
+				item.DeltaInMinutes = &diffMin
 			}
 			item.AttendanceID = agg.attID
 		}
@@ -519,20 +526,33 @@ func groupAndCompute(
 			str := local.Format("15:04:05")
 			item.ClockOutLocal = &str
 			item.ClockOutUTC = agg.lastOutUTC
-			diff := int(local.Sub(deadlineOutLocal).Minutes())
-			if diff <= 0 {
+
+			diffMin := signedCeilMinutes(local.Sub(deadlineOutLocal))
+
+			switch {
+			case diffMin == 0:
 				item.StatusOut = "normal"
 				z := 0
 				item.DeltaOutMinutes = &z
-			} else {
+			case diffMin > 0:
 				item.StatusOut = "overtime"
-				item.DeltaOutMinutes = &diff
+				item.DeltaOutMinutes = &diffMin
+			default:
+				item.StatusOut = "early_leave"
+				item.DeltaOutMinutes = &diffMin
 			}
 		}
-
 		items = append(items, item)
 	}
 
 	sort.SliceStable(items, func(i, j int) bool { return items[i].DateLocal < items[j].DateLocal })
 	return items
+}
+
+func signedCeilMinutes(d time.Duration) int {
+	secs := d.Seconds()
+	if secs >= 0 {
+		return int(math.Ceil(secs / 60.0))
+	}
+	return -int(math.Ceil(math.Abs(secs) / 60.0))
 }
