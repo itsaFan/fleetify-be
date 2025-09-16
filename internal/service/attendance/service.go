@@ -270,8 +270,9 @@ func (s *service) ListDeparmentAtdHistories(ctx context.Context, p ListInputDept
 	}
 
 	type deptTimes struct {
-		in, out string
-		name    string
+		in, out  string
+		name     string
+		deptName string
 	}
 	cache := map[string]deptTimes{}
 
@@ -283,7 +284,12 @@ func (s *service) ListDeparmentAtdHistories(ctx context.Context, p ListInputDept
 		if err != nil {
 			return deptTimes{}, err
 		}
-		v := deptTimes{in: emp.Department.MaxClockInTime, out: emp.Department.MaxClockOutTime, name: emp.Name}
+		v := deptTimes{
+			in:       emp.Department.MaxClockInTime,
+			out:      emp.Department.MaxClockOutTime,
+			name:     emp.Name,
+			deptName: emp.Department.DepartmentName,
+		}
 		cache[empId] = v
 		return v, nil
 	}
@@ -341,12 +347,14 @@ func (s *service) ListDeparmentAtdHistories(ctx context.Context, p ListInputDept
 		hOut, mOut, sOut, _ := helper.ParseCutoffHHMMSS(dt.out)
 
 		for day, agg := range byDay {
+
 			item := AttendanceHistoryItem{
-				EmployeeID:   empId,
-				EmployeeName: dt.name,
-				DateLocal:    day,
-				StatusIn:     "missing_in",
-				StatusOut:    "no_out",
+				EmployeeID:     empId,
+				EmployeeName:   dt.name,
+				DepartmentName: &dt.deptName,
+				DateLocal:      day,
+				StatusIn:       "missing_in",
+				StatusOut:      "no_out",
 			}
 
 			y, _m, _d, _ := helper.ParseYYYYMMDD(day)

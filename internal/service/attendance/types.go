@@ -23,6 +23,7 @@ type ListInputDept struct {
 type AttendanceHistoryItem struct {
 	EmployeeID      string     `json:"employee_id"`
 	EmployeeName    string     `json:"employee_name,omitempty"`
+	DepartmentName  *string    `json:"department_name,omitempty"`
 	DateLocal       string     `json:"date_local"`
 	ClockInLocal    *string    `json:"clock_in_local"`
 	ClockInUTC      *time.Time `json:"clock_in_utc"`
